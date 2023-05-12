@@ -1,138 +1,87 @@
 #include "rlImGui.h"
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
+#include <iostream>
+
+using namespace std;
+#include <vector>
+#include <map>
 
 
 //Tests comment
-Vector2 Third = { SCREEN_WIDTH / 3,SCREEN_HEIGHT / 3 };
 Vector2 mousePOS;
 Vector2 centerScreen = { SCREEN_WIDTH / 2,SCREEN_HEIGHT / 2 };
 int main(void)
 {
+    Rectangle box = Rectangle{ -500,-500,30,80 };
+
+    std::map<string, Rectangle> boxes;
+    boxes["box1"] = { -500,-500,40,40 };
+    boxes["box2"] = { -500,-500,150,200 };
+    boxes["box3"] = { -500,-500,20,60 };
+    boxes["box4"] = { -500,-500,80,50};
+    boxes["box5"] = { -500,-500,250,15 };
+
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Sunshine");
     SetTargetFPS(60);
 
+    int rotation;
     while (!WindowShouldClose())
     {
         BeginDrawing();
         ClearBackground(RAYWHITE);
         DrawText("Hello World!", 16, 9, 20, RED);
         mousePOS = GetMousePosition();
-        //Draw Pixel??
-        DrawPixel(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, RED);
 
-        //DrawPixelV
-        DrawPixelV(Third, BLUE);
-        
-        //DrawLine
-       // DrawLineEx(GetMousePosition(), centerScreen, 10, DARKPURPLE);
-    
-        /* void DrawLineBezier(Vector2 startPos, Vector2 endPos, float thick, Color color);
-        void DrawLineBezier(Vector2 startPos, Vector2 endPos, float thick, Color color);                   // Draw a line using cubic-bezier curves in-out
-        void DrawLineBezierQuad(Vector2 startPos, Vector2 endPos, Vector2 controlPos, float thick, Color color); // Draw line using quadratic bezier curves with a control point
-        void DrawLineBezierCubic(Vector2 startPos, Vector2 endPos, Vector2 startControlPos, Vector2 endControlPos, float thick, Color color); // Draw line using cubic bezier curves with 2 control points
-        */
-            //DrawLineBezier(mousePOS, centerScreen, 10, DARKPURPLE);
-            //
-            //DrawLineBezierQuad(mousePOS, centerScreen, { 200,200 }, 10, DARKPURPLE);
-            //
-            //DrawLineBezierCubic(mousePOS, centerScreen, { 100,300 }, { 100,700 }, 10, DARKPURPLE);
-     //***********************************************************************************************************************************************************
-        
-            
-            /*
-        void DrawCircle(int centerX, int centerY, float radius, Color color);                                                   // Draw a color-filled circle
-        void DrawCircleSector(Vector2 center, float radius, float startAngle, float endAngle, int segments, Color color);       // Draw a piece of a circle
-        void DrawCircleSectorLines(Vector2 center, float radius, float startAngle, float endAngle, int segments, Color color);  // Draw circle sector outline
-        void DrawCircleGradient(int centerX, int centerY, float radius, Color color1, Color color2);                            // Draw a gradient-filled circle
-        void DrawCircleV(Vector2 center, float radius, Color color);                                                            // Draw a color-filled circle (Vector version)
-        void DrawCircleLines(int centerX, int centerY, float radius, Color color);                                              // Draw circle outline
-            */
-       
-                        //DrawCircle(650, 650, 30, RED);
-                        //
-                        //Vector2 Circle2 = mousePOS;
-                        //Vector2 Circle3 = mousePOS;
-                        //Vector2 Circle4 = mousePOS;
-                        //Vector2 Circle5 = mousePOS;
-                        //Vector2 Circle6 = mousePOS;
-                        //
-                        //Circle2.x += 200;
-                        //Circle3.x += 400;
-                        //Circle4.x += 600;
-                        //Circle5.x -= 200;
-                        //Circle6.x -= 400;
-                        //
-                        //DrawCircleSector(mousePOS, 100, 90,180,5, DARKBLUE);
-                        //
-                        //
-                        //DrawCircleSectorLines(Circle2,100 , 0, 90, 2, RED);
-                        //
-                        //DrawCircleGradient(Circle3.x, Circle3.y, 90, BLUE, RED);
-                        //
-                        //DrawCircleV(Circle4, 100, GREEN);
-                        //
-                        //DrawCircleLines(Circle5.x, Circle5.y, 100, PURPLE);
-     //***********************************************************************************************************************************************************
+        int key = GetKeyPressed();
+        switch (key)
+        {
+        case KEY_ONE:
+            boxes["box1"].x = mousePOS.x - (boxes["box1"].width / 2);
+            boxes["box1"].y = mousePOS.y - (boxes["box1"].height / 2);
+            key = NULL;
+            break;
+        case KEY_TWO:
+            boxes["box2"].x = mousePOS.x - (boxes["box2"].width / 2);
+            boxes["box2"].y = mousePOS.y - (boxes["box2"].height / 2);
+                key = NULL;
+            break;
+        case KEY_THREE:
+            boxes["box3"].x = mousePOS.x - (boxes["box4"].width / 2);
+            boxes["box3"].y = mousePOS.y - (boxes["box4"].height / 2);
+                key = NULL;
+            break;
+        case KEY_FOUR:
+            boxes["box4"].x = mousePOS.x - (boxes["box4"].width / 2);
+            boxes["box4"].y = mousePOS.y - (boxes["box4"].height / 2);
+                key = NULL;
+            break;
+        case KEY_FIVE:
+            boxes["box5"].x = mousePOS.x - (boxes["box5"].width / 2);
+            boxes["box5"].y = mousePOS.y - (boxes["box5"].height / 2);
+                key = NULL;
+            break;
+        case KEY_BACKSPACE:
+            for (auto& element : boxes)
+            {
+                element.second.x = -500;
+            }
 
+            break;
+        }
 
-        /*
-            void DrawEllipse(int centerX, int centerY, float radiusH, float radiusV, Color color);             // Draw ellipse
-            void DrawEllipseLines(int centerX, int centerY, float radiusH, float radiusV, Color color);        // Draw ellipse outline
-        */
+        DrawRectanglePro(boxes["box1"], {0,0}, 0, GREEN);
+        DrawRectanglePro(boxes["box2"], {0,0}, 0, RED);
+        DrawRectanglePro(boxes["box3"], {0,0}, 0, BLUE);
+        DrawRectanglePro(boxes["box4"], {0,0}, 0, PURPLE);
+        DrawRectanglePro(boxes["box5"], {0,0}, 0, ORANGE);
 
-                    //Vector2 ellipse = mousePOS;
-                    //Vector2 ellipse2 = mousePOS;
-                    //
-                    //ellipse2.x += 200;
-                    //DrawEllipse(ellipse.x, ellipse.y, 100, 200, GREEN);
-                    //
-                    //DrawEllipseLines(ellipse2.x, ellipse.y, 100, 100, PURPLE);
-     //***********************************************************************************************************************************************************
-
-
-
-        //void DrawRing(Vector2 center, float innerRadius, float outerRadius, float startAngle, float endAngle, int segments, Color color); // Draw ring
-
-        
-                            //Vector2 ring = mousePOS;
-                            //DrawRing(ring, 75, 100, 0,270, 6, RED);
-     //***********************************************************************************************************************************************************
-
-
-
-
-
-        /*
-  void DrawRingLines(Vector2 center, float innerRadius, float outerRadius, float startAngle, float endAngle, int segments, Color color);    // Draw ring outline
-    void DrawRectangle(int posX, int posY, int width, int height, Color color);                        // Draw a color-filled rectangle
-    void DrawRectangleV(Vector2 position, Vector2 size, Color color);                                  // Draw a color-filled rectangle (Vector version)
-    void DrawRectangleRec(Rectangle rec, Color color);                                                 // Draw a color-filled rectangle
-    void DrawRectanglePro(Rectangle rec, Vector2 origin, float rotation, Color color);                 // Draw a color-filled rectangle with pro parameters
-    void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2);// Draw a vertical-gradient-filled rectangle
-    void DrawRectangleGradientH(int posX, int posY, int width, int height, Color color1, Color color2);// Draw a horizontal-gradient-filled rectangle
-    void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4);       // Draw a gradient-filled rectangle with custom vertex colors
-    void DrawRectangleLines(int posX, int posY, int width, int height, Color color);                   // Draw rectangle outline
-    void DrawRectangleLinesEx(Rectangle rec, float lineThick, Color color);                            // Draw rectangle outline with extended parameters
-    void DrawRectangleRounded(Rectangle rec, float roundness, int segments, Color color);              // Draw rectangle with rounded edges
-    void DrawRectangleRoundedLines(Rectangle rec, float roundness, int segments, float lineThick, Color color); // Draw rectangle with rounded edges outline
-    
-      */
      
-        Vector2 rect = mousePOS;
-        Vector2 rect2 = mousePOS;
-        Vector2 rect3 = mousePOS;
-        Vector2 rect4 = mousePOS;
-        Vector2 rect5 = mousePOS;
-        Vector2 rect6 = mousePOS;
-        Vector2 rect7 = mousePOS;
-        Vector2 rect8 = mousePOS;
-        Vector2 rect9 = mousePOS;
-        Vector2 rect10 = mousePOS;
-        Vector2 rect11 = mousePOS;
-        Vector2 rect12 = mousePOS;
 
-        DrawRectangle(rect.x-10, rect.y-25, 20, 50, GREEN);
+
+
+
+
 
 
          EndDrawing();
