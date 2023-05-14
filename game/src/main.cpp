@@ -66,7 +66,8 @@ public:
         }
         else if (selected && shape == 1)
         {
-            DrawCircleLines(this->position.x, this->position.y, this->radius, BLACK);
+            DrawRing(this->position, this->radius+1, this->radius - 5, 0, 360, 100, BLACK);
+
         }
     }
 
