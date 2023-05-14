@@ -142,7 +142,29 @@ private:
     int rotation;
 };
 
+class ADD_MINUS_Button
+{
+public:
 
+    ADD_MINUS_Button()
+    {
+        this->multiplier = 0;
+        this->position = {};
+        this->v1 = v2 = v3 = {};
+    }
+
+    void Draw()
+    {
+       // DrawTriangle()
+    }
+private:
+    Vector2 position;
+    Vector2 v1;
+    Vector2 v2;
+    Vector2 v3;
+    int multiplier;
+
+};
 
 int main(void)
 {
@@ -274,6 +296,11 @@ int main(void)
             else
                 DrawCircleLines(mousePOS.x, mousePOS.y, 10, BLACK);
         }
+        Vector2 v1 = { (five.GetXPos() - 30)-10,(five.GetYPos()) };
+        Vector2 v2 = { v1.x-30,five.GetYPos()+five.GetSize().y};
+        Vector2 v3 = { v1.x + 30,v2.y };
+
+        DrawTriangle(v1,v2,v3,BLACK);
         EndDrawing();
     }
 
