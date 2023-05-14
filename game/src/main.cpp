@@ -26,6 +26,7 @@ public:
         this->position.x = rect.x;
         this->position.y = rect.y;
         this->radius = radius;
+        selected = false;
         rotation = 0;
         this->shape = shape;
     };
@@ -51,12 +52,38 @@ public:
         {
             DrawRectangle(rect.x, rect.y, rect.width, rect.height, color); 
         }
+
+        if (selected && shape==2 )
+        {
+            DrawRectangleLinesEx(this->rect, 5, BLACK);
+        }
     }
+
+    void IsOn()
+    {
+        selected = true;
+    }
+
+    void IsOff()
+    {
+        selected = false;
+    }
+
+
 
     Vector3 GetSize() const
     {
         Vector3 size = { rect.width,rect.height,radius };
         return size;
+    }
+    Vector2 GetCenter() const
+    {
+        return position;
+    }
+
+    float GetRadius() const
+    {
+        return radius;
     }
 
     float GetXPos() const
@@ -88,9 +115,15 @@ public:
         this->rotation = rotation;
     }
 
+    Rectangle ReturnRect() const
+    {
+        return rect;
+    }
+
 private:
     Vector2 position;
     Rectangle rect;
+    bool selected;
     float radius;
     int value;
     int shape;
@@ -108,28 +141,8 @@ int main(void)
 
     Rectangle backScreen = Rectangle{ 0,0,SCREEN_WIDTH,SCREEN_HEIGHT };
     Rectangle readScreen = { backScreen.width * .025,backScreen.height * .11,backScreen.width * .95,130 };
-    map<string, Vector3> button;
+    vector<currencyButton> buttons;
 
-                    
-    button["QUARTER"] = { 25,100,25 };
-    button["LOONIE"] = { 10,0,0 };
-    button["TOONIE"] = { 20,0,0 };
-    button["FIVE"] = { 50,0,0 };
-    button["TEN"] = { 100,0,0 };
-    button["TWENTY"] = { 200,0,0 };
-    button["FIFTY"] = { 500,0,0 };
-    button["HUNDRED"] = { 1000,0,0 };
-
-
-    button["nine"] = {};
-    button["zero"] = {};
-    button["equal"] = { 0,0 };
-    button["minus"] = { 0,0 };
-    button["plus"] = { 0,0 };
-    button["multiply"] = { 0,0 };
-    button["divide"] = { 0,0 };
-    button["clear"] = { 0,0 };
-    button["point"] = { 0,0 };
 
     currencyButton quarter(25, { 50,50,0,0 }, buttonRadius,1);
     currencyButton loonie(100, { 50,50,0,0 }, buttonRadius,1);
@@ -139,10 +152,28 @@ int main(void)
     currencyButton twenty(2000, { 50,50,152,70 }, 0,2);
     currencyButton fifty(5000, { 50,50,152,70 }, 0, 2);
     currencyButton hundred(10000, { 50,50,152,70 }, 0, 2);
+    HideCursor();
 
 
 
+    quarter.SetPosition(SCREEN_WIDTH * .2, SCREEN_HEIGHT * .17);
+    loonie.SetPosition(quarter.GetXPos() + (loonie.GetSize().z * 2) + 15, quarter.GetYPos());
+    toonie.SetPosition(loonie.GetXPos() + (toonie.GetSize().z * 2) + 15, loonie.GetYPos());
+    five.SetPosition(quarter.GetXPos() - (quarter.GetSize().z), quarter.GetYPos() + (five.GetSize().y * 2));
+    ten.SetPosition(five.GetXPos(), five.GetYPos() + (five.GetSize().y + 15));
+    twenty.SetPosition(ten.GetXPos(), ten.GetYPos() + (ten.GetSize().y + 15));
+    fifty.SetPosition(twenty.GetXPos(), twenty.GetYPos() + (twenty.GetSize().y + 15));
+    hundred.SetPosition(fifty.GetXPos(), fifty.GetYPos() + (fifty.GetSize().y + 15));
  
+
+    buttons.push_back(quarter);
+    buttons.push_back(loonie);
+    buttons.push_back(toonie);
+    buttons.push_back(five);
+    buttons.push_back(ten);
+    buttons.push_back(twenty);
+    buttons.push_back(fifty);
+    buttons.push_back(hundred);
     SetTargetFPS(60);
 
     int rotation;
@@ -152,20 +183,53 @@ int main(void)
         ClearBackground(RAYWHITE);
         //DrawText("Hello World!", 16, 9, 20, RED);
 
-        quarter.SetPosition(SCREEN_WIDTH * .2, SCREEN_HEIGHT * .17);
-        loonie.SetPosition(quarter.GetXPos() + (loonie.GetSize().z * 2)+15, quarter.GetYPos());
-        toonie.SetPosition(loonie.GetXPos() + (toonie.GetSize().z * 2) + 15, loonie.GetYPos());
-        five.SetPosition(quarter.GetXPos()-(quarter.GetSize().z), quarter.GetYPos() + (five.GetSize().y*2));
-        ten.SetPosition(five.GetXPos(), five.GetYPos() + (five.GetSize().y+15));
-        twenty.SetPosition(ten.GetXPos(), ten.GetYPos() + (ten.GetSize().y +15));
-        fifty.SetPosition(twenty.GetXPos(), twenty.GetYPos() + (twenty.GetSize().y + 15));
-        hundred.SetPosition(fifty.GetXPos(), fifty.GetYPos() + (fifty.GetSize().y + 15));
-
 
         //Set Mouse Position x and y to new Var
         mousePOS = GetMousePosition();
         //Set which key is press to new Var
         int key = GetKeyPressed();
+            
+
+        switch (key)
+        {
+        case KEY_ONE:
+            for (currencyButton& button : buttons)
+            {
+                button.IsOff();
+            }
+            buttons[3].IsOn();
+            break;
+        case KEY_TWO:
+            for (currencyButton& button : buttons)
+            {
+                button.IsOff();
+            }
+            buttons[4].IsOn();
+            break;
+        case KEY_THREE:
+            for (currencyButton& button : buttons)
+            {
+                button.IsOff();
+            }
+            twenty.IsOn();
+            break;
+        case KEY_FOUR:
+            for (currencyButton& button : buttons)
+            {
+                button.IsOff();
+            }
+            fifty.IsOn();
+            break;
+        case KEY_FIVE:
+            for (currencyButton& button : buttons)
+            {
+                button.IsOff();
+            }
+            hundred.IsOn();
+            break;
+        }
+
+
 
 
         quarter.Draw(LIGHTGRAY);
@@ -177,7 +241,15 @@ int main(void)
         fifty.Draw(RED);
         hundred.Draw(BEIGE);
 
-
+        for (int i = 0; i<buttons.size();i++)
+        {
+            if (CheckCollisionCircles(buttons[i].GetCenter(), buttons[i].GetRadius(), mousePOS, 15) || CheckCollisionCircleRec(mousePOS,15,buttons[i].ReturnRect()))
+            {
+                DrawCircleV(mousePOS, 15, BLACK);
+            }
+            else
+                DrawCircleLines(mousePOS.x, mousePOS.y, 015, BLACK);
+        }
         EndDrawing();
     }
 
