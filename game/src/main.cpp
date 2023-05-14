@@ -40,22 +40,33 @@ public:
 
     void Draw(Color color)
     {
+        //Shape 1 is a circle
         if (shape == 1)
         {
+            //Drawing Cirle to Represent the coins.
             DrawCircle(position.x,position.y, radius, color);
             if (value == 200)
             {
+                //This Circle is soley for the toonie, to have the smaller circle inside of the larger circle
                 DrawCircle(position.x, position.y, radius * .66, GOLD);
             }
+
         }
+        //Shape 2 is a Rectangle
         else if (shape ==2)
         {
+            //Drawing Rectangle to represent the bills
             DrawRectangle(rect.x, rect.y, rect.width, rect.height, color); 
         }
 
         if (selected && shape==2 )
         {
+            //Drawing an outline around the bills
             DrawRectangleLinesEx(this->rect, 5, BLACK);
+        }
+        else if (selected && shape == 1)
+        {
+            DrawCircleLines(this->position.x, this->position.y, this->radius, BLACK);
         }
     }
 
@@ -152,6 +163,8 @@ int main(void)
     currencyButton twenty(2000, { 50,50,152,70 }, 0,2);
     currencyButton fifty(5000, { 50,50,152,70 }, 0, 2);
     currencyButton hundred(10000, { 50,50,152,70 }, 0, 2);
+
+    //Hiding Cursor so my mouse is represented by the circle
     HideCursor();
 
 
@@ -181,7 +194,8 @@ int main(void)
     {
         BeginDrawing();
         ClearBackground(RAYWHITE);
-        //DrawText("Hello World!", 16, 9, 20, RED);
+
+
 
 
         //Set Mouse Position x and y to new Var
@@ -197,7 +211,8 @@ int main(void)
             {
                 button.IsOff();
             }
-            buttons[3].IsOn();
+                buttons[3].IsOn();
+
             break;
         case KEY_TWO:
             for (currencyButton& button : buttons)
@@ -211,44 +226,52 @@ int main(void)
             {
                 button.IsOff();
             }
-            twenty.IsOn();
+            buttons[5].IsOn();
             break;
         case KEY_FOUR:
             for (currencyButton& button : buttons)
             {
                 button.IsOff();
             }
-            fifty.IsOn();
+            buttons[6].IsOn();
             break;
         case KEY_FIVE:
             for (currencyButton& button : buttons)
             {
                 button.IsOff();
             }
-            hundred.IsOn();
+            buttons[7].IsOn();
             break;
         }
 
 
 
-
-        quarter.Draw(LIGHTGRAY);
-        loonie.Draw(BROWN);
-        toonie.Draw(LIGHTGRAY);
-        five.Draw(BLUE);
-        ten.Draw(PURPLE);
-        twenty.Draw(GREEN);
-        fifty.Draw(RED);
-        hundred.Draw(BEIGE);
+        buttons[0].Draw(LIGHTGRAY);
+        buttons[1].Draw(BROWN);
+        buttons[2].Draw(LIGHTGRAY);
+        buttons[3].Draw(BLUE);
+        buttons[4].Draw(PURPLE);
+        buttons[5].Draw(GREEN);
+        buttons[6].Draw(RED);
+        buttons[7].Draw(BEIGE);
 
         for (int i = 0; i<buttons.size();i++)
         {
             if (CheckCollisionCircles(buttons[i].GetCenter(), buttons[i].GetRadius(), mousePOS, 15) || CheckCollisionCircleRec(mousePOS,15,buttons[i].ReturnRect()))
             {
-                DrawCircleV(mousePOS, 15, BLACK);
+
+                DrawCircleV(mousePOS, 10, BLACK);
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
+                    for (currencyButton& button : buttons)
+                    {
+                        button.IsOff();
+                    }
+                    buttons[i].IsOn();
+                }
             }
             else
-                DrawCircleLines(mousePOS.x, mousePOS.y, 015, BLACK);
+                DrawCircleLines(mousePOS.x, mousePOS.y, 10, BLACK);
         }
         EndDrawing();
     }
