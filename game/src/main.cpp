@@ -43,7 +43,7 @@ public:
         //Shape 1 is a circle
         if (shape == 1)
         {
-            //Drawing Cirle to Represent the coins.
+            //Drawing Cirle to Represent the coins. #1
             DrawCircle(position.x,position.y, radius, color);
             if (value == 200)
             {
@@ -55,17 +55,18 @@ public:
         //Shape 2 is a Rectangle
         else if (shape ==2)
         {
-            //Drawing Rectangle to represent the bills
+            //Drawing Rectangle to represent the bills #2
             DrawRectangle(rect.x, rect.y, rect.width, rect.height, color); 
         }
 
         if (selected && shape==2 )
         {
-            //Drawing an outline around the bills
+            //Drawing an outline around the bills #3
             DrawRectangleLinesEx(this->rect, 5, BLACK);
         }
         else if (selected && shape == 1)
         {
+            //Drawing Outline around the coins #4
             DrawRing(this->position, this->radius+1, this->radius - 5, 0, 360, 100, BLACK);
 
         }
@@ -187,7 +188,7 @@ int main(void)
     currencyButton fifty(5000, { 50,50,152,70 }, 0, 2);
     currencyButton hundred(10000, { 50,50,152,70 }, 0, 2);
 
-    //Hiding Cursor so my mouse is represented by the circle
+    //Hiding Cursor so my mouse is represented by the circle #5
     HideCursor();
 
 
@@ -221,9 +222,11 @@ int main(void)
 
 
 
-        //Set Mouse Position x and y to new Var
+        //Set Mouse Position x and y to new Var #6
         mousePOS = GetMousePosition();
-        //Set which key is press to new Var
+
+
+        //Set which key is press to new Var #7
         int key = GetKeyPressed();
             
 
@@ -280,10 +283,13 @@ int main(void)
 
         for (int i = 0; i<buttons.size();i++)
         {
+               //Checking if my mouse is hoving over a Rectangle or Circle. #8 and #9
             if (CheckCollisionCircles(buttons[i].GetCenter(), buttons[i].GetRadius(), mousePOS, 15) || CheckCollisionCircleRec(mousePOS,15,buttons[i].ReturnRect()))
             {
-
+                //Filling in the circle of my mouse when the house is hoving over one of the objects. #10
                 DrawCircleV(mousePOS, 10, BLACK);
+
+                    //Checking if I clicked on one of the buttons, to selected and add an outline over the object. #11
                 if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                 {
                     for (currencyButton& button : buttons)
@@ -294,12 +300,17 @@ int main(void)
                 }
             }
             else
+            {
+                //Drawing a circle outline at my mouse every frame, if im not hovering over one of the objects. #12
                 DrawCircleLines(mousePOS.x, mousePOS.y, 10, BLACK);
+            }
         }
         Vector2 v1 = { (five.GetXPos() - 30)-10,(five.GetYPos()) };
         Vector2 v2 = { v1.x-30,five.GetYPos()+five.GetSize().y};
         Vector2 v3 = { v1.x + 30,v2.y };
 
+
+        //Testing Drawing a triangle
         DrawTriangle(v1,v2,v3,BLACK);
         EndDrawing();
     }
