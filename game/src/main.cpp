@@ -38,6 +38,11 @@ public:
         return m_velocity;
     }
 
+    Vector2 GetAcceleration()
+    {
+        return m_acceleration;
+    }
+
     void SetVelocity(Vector2 Velo)
     {
         m_velocity = Velo;
@@ -46,6 +51,11 @@ public:
     void SetPosition(Vector2 position)
     {
         m_position = position;
+    }
+
+    void SetAcceleration(Vector2 Accel)
+    {
+        m_acceleration = Accel;
     }
 
 private:
@@ -108,6 +118,7 @@ public:
         newPosition = m_fish->GetPosition() + newVelo;
 
        // std::cout << "Norm To Mouse:" << deltaVel.x <<" : "<< deltaVel.y << std::endl;
+        m_fish->SetAcceleration(deltaAccel);
         m_fish->SetVelocity(newVelo);
         m_fish->SetPosition(newPosition);
     }
@@ -119,6 +130,28 @@ public:
 
     void Flee(float deltaTime, Vector2 ObjectToFleeFrom)
     {
+        if (m_fish->GetPosition().x > SCREEN_WIDTH)
+        {
+            m_fish->SetVelocity({ 0,0 });
+            m_fish->SetAcceleration({ 0,0 });
+
+        }
+        if (m_fish->GetPosition().x < 45)
+        {
+            m_fish->SetVelocity({ 0,0 });
+            m_fish->SetAcceleration({ 0,0 });
+        }
+        if (m_fish->GetPosition().y > SCREEN_HEIGHT)
+        {
+            m_fish->SetVelocity({ 0,0 });
+            m_fish->SetAcceleration({ 0,0 });
+
+        }
+        if (m_fish->GetPosition().y < 45)
+        {
+            m_fish->SetVelocity({ 0,0 });
+            m_fish->SetAcceleration({ 0,0 });
+        }
         Vector2 newPosition = m_fish->GetPosition();
         Vector2 newVelo = m_fish->GetVelocity();
         Vector2 PosToMouse = ObjectToFleeFrom;
@@ -144,16 +177,62 @@ public:
         newPosition = m_fish->GetPosition() + newVelo;
 
         // std::cout << "Norm To Mouse:" << deltaVel.x <<" : "<< deltaVel.y << std::endl;
+        m_fish->SetAcceleration(deltaAccel);
         m_fish->SetVelocity(newVelo);
         m_fish->SetPosition(newPosition);
+        if (m_fish->GetPosition().x > SCREEN_WIDTH)
+        {
+            m_fish->SetVelocity({ 0,0 });
+            m_fish->SetAcceleration({ 0,0 });
+
+        }
+        if (m_fish->GetPosition().x < 45)
+        {
+            m_fish->SetVelocity({ 0,0 });
+            m_fish->SetAcceleration({ 0,0 });
+        }
+        if (m_fish->GetPosition().y > SCREEN_HEIGHT)
+        {
+            m_fish->SetVelocity({ 0,0 });
+            m_fish->SetAcceleration({ 0,0 });
+
+        }
+        if (m_fish->GetPosition().y < 45)
+        {
+            m_fish->SetVelocity({ 0,0 });
+            m_fish->SetAcceleration({ 0,0 });
+        }
     }
 
 
     void Draw()
     {
-        DrawCircleV(m_fish->GetPosition(), 45, RED);
-    }
+        if (m_fish->GetPosition().x > SCREEN_WIDTH)
+        {
+            m_fish->SetVelocity({ 0,0 });
+            m_fish->SetAcceleration({ 0,0 });
 
+        }
+        if (m_fish->GetPosition().x < 45)
+        {
+            m_fish->SetVelocity({ 0,0 });
+            m_fish->SetAcceleration({ 0,0 });
+        }
+        if (m_fish->GetPosition().y > SCREEN_HEIGHT)
+        {
+            m_fish->SetVelocity({ 0,0 });
+            m_fish->SetAcceleration({ 0,0 });
+
+        }
+        if (m_fish->GetPosition().y < 45)
+        {
+            m_fish->SetVelocity({ 0,0 });
+            m_fish->SetAcceleration({ 0,0 });
+        }
+            DrawCircleV(m_fish->GetPosition(), 45, RED);
+
+        
+    }
 
 private:
     float m_maxSpeed; // 350 Px/s 
@@ -188,9 +267,9 @@ int main(void)
     float maxAccel = 40;
     Vector2 acceleration = { 0,25 }; //In px/s/s
 
-    agents.push_back(new Agent(position, acceleration, velocity, 50, 5));
-    agents.push_back(new Agent(100,5));
-    agents.push_back(new Agent(250, 5));
+    agents.push_back(new Agent(position, acceleration, velocity, 15, 5));
+    agents.push_back(new Agent(20,300));
+    agents.push_back(new Agent(30, 300));
     
 
     Agent* fish = new Agent(position, acceleration, velocity,60,50);
@@ -236,12 +315,10 @@ int main(void)
             }
             else
             {
-
-                    for (Agent* agent2 : agents)
-                    {
-                        agent2->Flee(dt, agent2->GetPosition());
-                   
-                    }
+                for (Agent* agent : agents)
+                {
+                    agent->Flee(dt, GetMousePosition());
+                }
             }
 
             for (Agent* agent : agents)
