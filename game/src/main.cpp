@@ -3,6 +3,38 @@
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
+
+class RigidBody
+{
+public:
+    RigidBody(Vector2 position,Vector2 accel,Vector2 velo) {
+        m_position = position;
+        m_acceleration = accel;
+        m_displacement = m_position;
+        m_velocity = velo;
+    }
+
+    ~RigidBody() {}
+
+    Vector2 GetPosition()
+    {
+
+        return m_position;
+    }
+
+    Vector2 GetVelocity()
+    {
+        return m_velocity;
+    }
+
+private:
+    Vector2 m_position;
+    Vector2 m_velocity;
+    Vector2 m_acceleration;
+    Vector2 m_displacement;
+
+};
+
 Vector2 WrapAroundScreen(Vector2 position)
 {
     Vector2 outposition =
