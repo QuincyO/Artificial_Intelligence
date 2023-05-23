@@ -120,7 +120,7 @@ int main(void)
     Vector2 position = { 500,250 };//in px
     Vector2 velocity = { 0,0 }; //In px/s
     float maxSpeed = 25;
-    float maxAccel = 100;
+    float maxAccel = 50;
     Vector2 acceleration = { 0,25 }; //In px/s/s
 
     //Need three different parameters:
