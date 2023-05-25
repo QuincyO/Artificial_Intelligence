@@ -6,6 +6,16 @@
 #define SCREEN_HEIGHT 720
 
 
+Vector2 WrapAroundScreen(Vector2 position)
+{
+    Vector2 outPosition =
+    {
+        fmodf(position.x + SCREEN_WIDTH,SCREEN_WIDTH),
+        fmodf(position.y + SCREEN_HEIGHT,SCREEN_HEIGHT)
+    };
+    return outPosition;
+}
+
 class RigidBody
 {
 public:
@@ -91,8 +101,28 @@ public:
         m_fish = nullptr;
     }
 
+    Vector2 Update(float dt,Vector2& pos,Vector2& accel,Vector2& velo)
+    {
+        Vector2 velocity = velo;
+        Vector2 position = pos;
+        Vector2 accleration = accel;
+        Vector2 displacement = velocity * dt;
+
+        position = position + displacement + ((accleration*0.5f) * dt * dt);
+
+        velocity = velocity + accleration * dt;
+
+
+    }
+
     void Seek(float deltaTime,Vector2 mousePOS)
     {
+
+  
+
+
+
+
         Vector2 newPosition = m_fish->GetPosition();
         Vector2 newVelo = m_fish->GetVelocity();
         Vector2 PosToMouse = mousePOS;
@@ -105,6 +135,8 @@ public:
         //std::cout << "Norm To Mouse:" << PosToMouse.x <<" : "<< PosToMouse.y << std::endl;
 
         Vector2 desiredVel = PosToMouse * m_maxSpeed;
+        desiredVel.x = Clamp(desiredVel.x, -m_maxSpeed, m_maxSpeed);
+        desiredVel.y = Clamp(desiredVel.y, -m_maxSpeed, m_maxSpeed);
 
         //std::cout << "Norm To Mouse:" << desiredVel.x <<" : "<< desiredVel.y << std::endl;
         Vector2 deltaVel = desiredVel - m_fish->GetVelocity();
@@ -118,8 +150,11 @@ public:
         newPosition = m_fish->GetPosition() + newVelo;
 
        // std::cout << "Norm To Mouse:" << deltaVel.x <<" : "<< deltaVel.y << std::endl;
+        deltaAccel.x = Clamp(deltaAccel.x, -m_maxAacceleration, m_maxAacceleration);
+        deltaAccel.y = Clamp(deltaAccel.x, -m_maxAacceleration, m_maxAacceleration);
         m_fish->SetAcceleration(deltaAccel);
         m_fish->SetVelocity(newVelo);
+        newPosition = WrapAroundScreen(newPosition);
         m_fish->SetPosition(newPosition);
     }
 
@@ -130,28 +165,7 @@ public:
 
     void Flee(float deltaTime, Vector2 ObjectToFleeFrom)
     {
-        if (m_fish->GetPosition().x > SCREEN_WIDTH)
-        {
-            m_fish->SetVelocity({ 0,0 });
-            m_fish->SetAcceleration({ 0,0 });
-
-        }
-        if (m_fish->GetPosition().x < 45)
-        {
-            m_fish->SetVelocity({ 0,0 });
-            m_fish->SetAcceleration({ 0,0 });
-        }
-        if (m_fish->GetPosition().y > SCREEN_HEIGHT)
-        {
-            m_fish->SetVelocity({ 0,0 });
-            m_fish->SetAcceleration({ 0,0 });
-
-        }
-        if (m_fish->GetPosition().y < 45)
-        {
-            m_fish->SetVelocity({ 0,0 });
-            m_fish->SetAcceleration({ 0,0 });
-        }
+        
         Vector2 newPosition = m_fish->GetPosition();
         Vector2 newVelo = m_fish->GetVelocity();
         Vector2 PosToMouse = ObjectToFleeFrom;
@@ -164,7 +178,8 @@ public:
         //std::cout << "Norm To Mouse:" << PosToMouse.x <<" : "<< PosToMouse.y << std::endl;
 
         Vector2 desiredVel = PosToMouse * m_maxSpeed;
-
+        desiredVel.x = Clamp(desiredVel.x, -m_maxSpeed, m_maxSpeed);
+        desiredVel.y = Clamp(desiredVel.y, -m_maxSpeed, m_maxSpeed);
         //std::cout << "Norm To Mouse:" << desiredVel.x <<" : "<< desiredVel.y << std::endl;
         Vector2 deltaVel = desiredVel - m_fish->GetVelocity();
 
@@ -177,59 +192,23 @@ public:
         newPosition = m_fish->GetPosition() + newVelo;
 
         // std::cout << "Norm To Mouse:" << deltaVel.x <<" : "<< deltaVel.y << std::endl;
+        deltaAccel.x = Clamp(deltaAccel.x, -m_maxAacceleration, m_maxAacceleration);
+        deltaAccel.y = Clamp(deltaAccel.x, -m_maxAacceleration, m_maxAacceleration);
+        Clamp(newPosition.y, -m_maxAacceleration, m_maxAacceleration);
         m_fish->SetAcceleration(deltaAccel);
         m_fish->SetVelocity(newVelo);
+        newPosition = WrapAroundScreen(newPosition);
         m_fish->SetPosition(newPosition);
-        if (m_fish->GetPosition().x > SCREEN_WIDTH)
-        {
-            m_fish->SetVelocity({ 0,0 });
-            m_fish->SetAcceleration({ 0,0 });
-
-        }
-        if (m_fish->GetPosition().x < 45)
-        {
-            m_fish->SetVelocity({ 0,0 });
-            m_fish->SetAcceleration({ 0,0 });
-        }
-        if (m_fish->GetPosition().y > SCREEN_HEIGHT)
-        {
-            m_fish->SetVelocity({ 0,0 });
-            m_fish->SetAcceleration({ 0,0 });
-
-        }
-        if (m_fish->GetPosition().y < 45)
-        {
-            m_fish->SetVelocity({ 0,0 });
-            m_fish->SetAcceleration({ 0,0 });
-        }
+       
     }
 
 
     void Draw()
     {
-        if (m_fish->GetPosition().x > SCREEN_WIDTH)
-        {
-            m_fish->SetVelocity({ 0,0 });
-            m_fish->SetAcceleration({ 0,0 });
 
-        }
-        if (m_fish->GetPosition().x < 45)
-        {
-            m_fish->SetVelocity({ 0,0 });
-            m_fish->SetAcceleration({ 0,0 });
-        }
-        if (m_fish->GetPosition().y > SCREEN_HEIGHT)
-        {
-            m_fish->SetVelocity({ 0,0 });
-            m_fish->SetAcceleration({ 0,0 });
-
-        }
-        if (m_fish->GetPosition().y < 45)
-        {
-            m_fish->SetVelocity({ 0,0 });
-            m_fish->SetAcceleration({ 0,0 });
-        }
             DrawCircleV(m_fish->GetPosition(), 45, RED);
+            DrawLineV(m_fish->GetPosition(), m_fish->GetPosition() + m_fish->GetVelocity(), BLACK);
+            DrawLineV(m_fish->GetPosition(), m_fish->GetPosition() + m_fish->GetAcceleration(), GREEN);
 
         
     }
@@ -265,14 +244,14 @@ int main(void)
     Vector2 velocity = { 0,0 }; //In px/s
     float maxSpeed = 10;
     float maxAccel = 40;
-    Vector2 acceleration = { 0,25 }; //In px/s/s
+    Vector2 acceleration = { 0,10 }; //In px/s/s
 
-    agents.push_back(new Agent(position, acceleration, velocity, 15, 5));
-    agents.push_back(new Agent(20,300));
-    agents.push_back(new Agent(30, 300));
+    //agents.push_back(new Agent(position, acceleration, velocity, 5, 5));
+    agents.push_back(new Agent(5,10));
+    agents.push_back(new Agent(7, 10));
     
 
-    Agent* fish = new Agent(position, acceleration, velocity,60,50);
+    Agent* fish = new Agent(position, acceleration, velocity,3,100);
     agents.push_back(fish);
 
     //Need three different parameters:
@@ -296,7 +275,7 @@ int main(void)
         ClearBackground(RAYWHITE);
             rlImGuiBegin();
 
-        const float dt = GetFrameTime();
+           const float dt = GetFrameTime();
     
 
         Vector2 mousePOS = GetMousePosition();
@@ -317,7 +296,7 @@ int main(void)
             {
                 for (Agent* agent : agents)
                 {
-                    agent->Flee(dt, GetMousePosition());
+                    agent->Flee(dt, agent->GetPosition());
                 }
             }
 
