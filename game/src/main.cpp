@@ -118,44 +118,37 @@ public:
     void Seek(float deltaTime,Vector2 mousePOS)
     {
 
-  
-
-
-
-
-        Vector2 newPosition = m_fish->GetPosition();
-        Vector2 newVelo = m_fish->GetVelocity();
-        Vector2 PosToMouse = mousePOS;
-        PosToMouse =
+        Vector2 VectorToMouse =
         {
-            PosToMouse.x = PosToMouse.x - m_fish->GetPosition().x,
-            PosToMouse.y = PosToMouse.y - m_fish->GetPosition().y
+            mousePOS.x - m_fish->GetPosition().x,
+           mousePOS.y - m_fish->GetPosition().y
         };
-        PosToMouse = Normalize(PosToMouse);
-        //std::cout << "Norm To Mouse:" << PosToMouse.x <<" : "<< PosToMouse.y << std::endl;
 
-        Vector2 desiredVel = PosToMouse * m_maxSpeed;
-        desiredVel.x = Clamp(desiredVel.x, -m_maxSpeed, m_maxSpeed);
-        desiredVel.y = Clamp(desiredVel.y, -m_maxSpeed, m_maxSpeed);
+        VectorToMouse = Normalize(VectorToMouse);
 
-        //std::cout << "Norm To Mouse:" << desiredVel.x <<" : "<< desiredVel.y << std::endl;
-        Vector2 deltaVel = desiredVel - m_fish->GetVelocity();
+        Vector2 position = m_fish->GetPosition();
+        Vector2 desiredVelocity = VectorToMouse * m_maxSpeed;
 
-        Vector2 deltaAccel = Normalize(deltaVel) * m_maxAacceleration;
+        Vector2 deltaVelocity = desiredVelocity - m_fish->GetVelocity();
 
-        newVelo = m_fish->GetVelocity() + deltaAccel * deltaTime;
+       Vector2 acceleration = (Normalize(deltaVelocity) * m_maxAacceleration);
 
-        
+        float MagOfVelo = sqrt((m_fish->GetVelocity().x * m_fish->GetVelocity().x) + (m_fish->GetVelocity().y * m_fish->GetVelocity().y));
 
-        newPosition = m_fish->GetPosition() + newVelo;
 
-       // std::cout << "Norm To Mouse:" << deltaVel.x <<" : "<< deltaVel.y << std::endl;
-        deltaAccel.x = Clamp(deltaAccel.x, -m_maxAacceleration, m_maxAacceleration);
-        deltaAccel.y = Clamp(deltaAccel.x, -m_maxAacceleration, m_maxAacceleration);
-        m_fish->SetAcceleration(deltaAccel);
-        m_fish->SetVelocity(newVelo);
-        newPosition = WrapAroundScreen(newPosition);
-        m_fish->SetPosition(newPosition);
+        if (MagOfVelo > MagOfVelo)
+        {
+            m_fish->SetVelocity(
+                m_fish->GetVelocity() * (m_maxSpeed / MagOfVelo));
+
+        };
+
+        position = position + (m_fish->GetVelocity() * deltaTime) + ((acceleration * 0.5f) * deltaTime * deltaTime);
+
+        m_fish->SetPosition(position);
+        m_fish->SetVelocity(m_fish->GetVelocity() + acceleration * deltaTime);
+
+
     }
 
     Vector2 GetPosition()
@@ -201,7 +194,10 @@ public:
         m_fish->SetPosition(newPosition);
        
     }
-
+    void Update()
+    {
+        
+    }
 
     void Draw()
     {
@@ -226,7 +222,19 @@ private:
 
 
 
+Vector2 Update(float dt, Vector2& pos, Vector2& accel, Vector2& velo)
+{
+    Vector2 velocity = velo;
+    Vector2 position = pos;
+    Vector2 accleration = accel;
+    Vector2 displacement = velocity * dt;
 
+    position = position + displacement + ((accleration * 0.5f) * dt * dt);
+
+    velocity = velocity + accleration * dt;
+
+    return position;
+}
 
 
 
@@ -238,21 +246,16 @@ int main(void)
     rlImGuiSetup(true);
     SetTargetFPS(60);
 
+    Agent* Fish1 = new Agent(120,250);
+
     float timer = 0;
 
     Vector2 position = { 500,250 };//in px
     Vector2 velocity = { 0,0 }; //In px/s
     float maxSpeed = 10;
-    float maxAccel = 40;
-    Vector2 acceleration = { 0,10 }; //In px/s/s
+    float maxAccel = 150;
+    Vector2 acceleration = { 0,0 }; //In px/s/s
 
-    //agents.push_back(new Agent(position, acceleration, velocity, 5, 5));
-    agents.push_back(new Agent(5,10));
-    agents.push_back(new Agent(7, 10));
-    
-
-    Agent* fish = new Agent(position, acceleration, velocity,3,100);
-    agents.push_back(fish);
 
     //Need three different parameters:
     /*
@@ -271,41 +274,69 @@ int main(void)
     while (!WindowShouldClose())
     {
         BeginDrawing();
-    HideCursor();
         ClearBackground(RAYWHITE);
             rlImGuiBegin();
 
            const float dt = GetFrameTime();
     
 
+
+
         Vector2 mousePOS = GetMousePosition();
 
+        Vector2 displacement =  velocity * dt; // In px/s
 
+
+        Vector2 VectorToMouse =
+        {
+            mousePOS.x - position.x,    
+           mousePOS.y - position.y
+        };
+        VectorToMouse = Normalize(VectorToMouse);
+        Vector2 desiredVelocity = VectorToMouse * maxSpeed;
+
+        Vector2 deltaVelocity = desiredVelocity - velocity;
+
+        acceleration = (Normalize(deltaVelocity) * maxAccel) ;
+      //  acceleration = VectorToMouse * maxAccel;
+
+        float MagOfVelo = sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y));
+
+        
+            if(MagOfVelo > MagOfVelo)
+            {
+                velocity = velocity * (maxSpeed / MagOfVelo);
+             
+            }
+        
+        position = position + (velocity *dt) + ((acceleration * 0.5f) * dt * dt);
+
+        velocity = velocity + acceleration * dt;
+         
+
+      ImGui::SliderFloat2("position", &(position.x), 0, SCREEN_WIDTH);
+      ImGui::SliderFloat2("velocity", &(velocity.x), -maxSpeed, maxSpeed);
+      ImGui::SliderFloat2("Acceleration", &(acceleration.x), -maxAccel, maxAccel);
+      ImGui::SliderFloat("Max Acceleration", &maxAccel, 1, 1500); 
+      ImGui::SliderFloat("Max Speed", &maxSpeed, -1, 1500);
             
 
-            DrawCircleV(mousePOS, 30, BLACK);
+      if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+      {
+        Fish1->Seek(dt, GetMousePosition());
+      }
+        Fish1->Draw();
 
-            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
-            {
-                for (Agent* agent : agents)
-                {
-                    agent->Seek(dt, mousePOS);
-                }
-            }
-            else
-            {
-                for (Agent* agent : agents)
-                {
-                    agent->Flee(dt, agent->GetPosition());
-                }
-            }
-
-            for (Agent* agent : agents)
-            {
-                agent->Draw();
-            }
+            position = WrapAroundScreen(position);
+            DrawCircleV(mousePOS, 30, RED);
+            DrawCircleV(position, 45, BLACK);
+            DrawLineV(position, position + velocity, GREEN);
+            DrawLineV(position, position + acceleration, RED);
+            DrawLineV(position, position + desiredVelocity, PURPLE);
 
 
+
+            timer += dt;
         rlImGuiEnd();
         EndDrawing();
     }
