@@ -198,7 +198,7 @@ public:
     void Draw()
     {
 
-            DrawCircleV(m_fish->GetPosition(), 45, RED)
+        DrawCircleV(m_fish->GetPosition(), 45, RED);
     }
 
 private:
