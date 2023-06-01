@@ -5,6 +5,12 @@
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
+//        position = position + (m_fish->GetVelocity() * deltaTime) + ((acceleration * 0.5f) * deltaTime * deltaTime);
+//        position = WrapAroundScreen(position);
+//        m_fish->SetPosition(position);
+//        m_fish->SetVelocity(m_fish->GetVelocity() + acceleration * deltaTime);
+
+
 
 Vector2 WrapAroundScreen(Vector2 position)
 {
@@ -68,11 +74,11 @@ public:
         m_acceleration = Accel;
     }
 
-private:
     Vector2 m_position;
     Vector2 m_velocity;
     Vector2 m_acceleration;
     Vector2 m_displacement;
+private:
 
 };
 
@@ -101,54 +107,29 @@ public:
         m_fish = nullptr;
     }
 
-    Vector2 Update(float dt,Vector2& pos,Vector2& accel,Vector2& velo)
+    void Update(float deltaTime)
     {
-        Vector2 velocity = velo;
-        Vector2 position = pos;
-        Vector2 accleration = accel;
-        Vector2 displacement = velocity * dt;
+        m_fish->m_velocity.x += m_fish->m_acceleration.x * deltaTime;
+        m_fish->m_velocity.y += m_fish->m_acceleration.y * deltaTime;
 
-        position = position + displacement + ((accleration*0.5f) * dt * dt);
-
-        velocity = velocity + accleration * dt;
-
+        m_fish->m_position.x += m_fish->m_velocity.x * deltaTime;
+        m_fish->m_position.y += m_fish->m_velocity.y * deltaTime;
+        m_fish->SetPosition(WrapAroundScreen(m_fish->GetPosition()));
 
     }
 
-    void Seek(float deltaTime,Vector2 mousePOS)
+    
+
+    Vector2 Seek(Vector2& targetPosition, float deltaTIme)
     {
-
-        Vector2 VectorToMouse =
-        {
-            mousePOS.x - m_fish->GetPosition().x,
-           mousePOS.y - m_fish->GetPosition().y
-        };
-
-        VectorToMouse = Normalize(VectorToMouse);
-
-        Vector2 position = m_fish->GetPosition();
-        Vector2 desiredVelocity = VectorToMouse * m_maxSpeed;
-
-        Vector2 deltaVelocity = desiredVelocity - m_fish->GetVelocity();
-
-       Vector2 acceleration = (Normalize(deltaVelocity) * m_maxAacceleration);
-
-        float MagOfVelo = sqrt((m_fish->GetVelocity().x * m_fish->GetVelocity().x) + (m_fish->GetVelocity().y * m_fish->GetVelocity().y));
-
-
-        if (MagOfVelo > MagOfVelo)
-        {
-            m_fish->SetVelocity(
-                m_fish->GetVelocity() * (m_maxSpeed / MagOfVelo));
-
-        };
-
-        position = position + (m_fish->GetVelocity() * deltaTime) + ((acceleration * 0.5f) * deltaTime * deltaTime);
-        position = WrapAroundScreen(position);
-        m_fish->SetPosition(position);
-        m_fish->SetVelocity(m_fish->GetVelocity() + acceleration * deltaTime);
-
-
+        Vector2 desiredVelocity = Normalize(targetPosition - m_fish->GetPosition()) * m_maxSpeed;
+        
+        Vector2 deltaAccel = desiredVelocity - m_fish->GetVelocity();
+        m_fish->SetAcceleration(deltaAccel);
+        Update(deltaTIme);
+        m_fish->SetAcceleration({ 0, 0 });
+        return deltaAccel;
+         
     }
 
     Vector2 GetPosition()
@@ -156,17 +137,17 @@ public:
         return m_fish->GetPosition();
     }
 
-    void Flee(float deltaTime, Vector2 ObjectToFleeFrom)
+    void Flee(float deltaTime, Vector2 targetPosition)
     {
         Vector2 VectorToMouse =
         {
-            ObjectToFleeFrom.x - m_fish->GetPosition().x,
-           ObjectToFleeFrom.y - m_fish->GetPosition().y
+            targetPosition.x - m_fish->GetPosition().x,
+           targetPosition.y - m_fish->GetPosition().y
         };
-
-        VectorToMouse = Normalize(VectorToMouse) *-1;
+        VectorToMouse = Normalize(VectorToMouse) * -1;
 
         Vector2 position = m_fish->GetPosition();
+
         Vector2 desiredVelocity = VectorToMouse * m_maxSpeed;
 
         Vector2 deltaVelocity = desiredVelocity - m_fish->GetVelocity();
@@ -175,24 +156,16 @@ public:
 
         float MagOfVelo = sqrt((m_fish->GetVelocity().x * m_fish->GetVelocity().x) + (m_fish->GetVelocity().y * m_fish->GetVelocity().y));
 
-
         if (MagOfVelo > MagOfVelo)
         {
             m_fish->SetVelocity(
                 m_fish->GetVelocity() * (m_maxSpeed / MagOfVelo));
-
         };
-
         position = position + (m_fish->GetVelocity() * deltaTime) + ((acceleration * 0.5f) * deltaTime * deltaTime);
         position = WrapAroundScreen(position);
         m_fish->SetPosition(position);
         m_fish->SetVelocity(m_fish->GetVelocity() + acceleration * deltaTime);
 
-       
-    }
-    void Update()
-    {
-        
     }
 
     void Draw()
@@ -214,19 +187,7 @@ private:
 
 
 
-Vector2 Update(float dt, Vector2& pos, Vector2& accel, Vector2& velo)
-{
-    Vector2 velocity = velo;
-    Vector2 position = pos;
-    Vector2 accleration = accel;
-    Vector2 displacement = velocity * dt;
 
-    position = position + displacement + ((accleration * 0.5f) * dt * dt);
-
-    velocity = velocity + accleration * dt;
-
-    return position;
-}
 
 
 
@@ -255,19 +216,6 @@ int main(void)
     Vector2 acceleration = { 0,0 }; //In px/s/s
 
 
-    //Need three different parameters:
-    /*
-        Position-Location on screen, expressed as a displacement from some reference point (0,0).
-            In raylib, its the top left, and we an use Pixels (px) as our unit for this.
-
-        Velocity - Change in position over time. We can use px/sec as our unit for this
-
-        Acceleration - Changes in velocity over time. We an use px/sec/sec as our unit for this.
-
-
-    
-    */
-
     Vector2 mousePOS = { 0,0 };
 
     while (!WindowShouldClose())
@@ -289,7 +237,7 @@ int main(void)
                 mousePOS = Fish1->GetPosition();
            }
 
-        Vector2 displacement =  velocity * dt; // In px/s
+    
 
 
         Vector2 VectorToMouse =
@@ -330,13 +278,13 @@ int main(void)
       {
           for (Agent* i : agents)
           {
-              i->Seek(dt, GetMousePosition());
+              i->Seek(mousePOS, dt);
           }
       }
       else {
           for (Agent* i : agents)
           {
-              i->Flee(dt, position);
+              i->Flee(dt,position);// (dt, position);
          }
       }
       for (Agent* i : agents)
