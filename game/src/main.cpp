@@ -255,6 +255,17 @@ int main(void)
     //  ImGui::SliderFloat("Max Speed", &maxSpeed, -1, 1500);
             
 
+        CheckCollisionPointLine();
+        if (mousePOS )
+
+
+
+
+
+
+
+
+
             position = WrapAroundScreen(position);
             DrawCircleV(mousePOS, 30, RED);
             DrawCircleV(position, 45, BLACK);
