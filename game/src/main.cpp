@@ -185,9 +185,17 @@ private:
 
 
 
+float AngleFromVector(Vector2 direction)
+{
+    float angle = atan2f(direction.y, direction.x) * RAD2DEG;
+    angle = fmodf(angle + 360, 360.0f);
+    return angle;
+}
 
-
-
+Vector2 VectorFromAngleDegrees(float angleDegrees)
+{
+    return Vector2{ cosf(angleDegrees * DEG2RAD),sinf(angleDegrees * DEG2RAD) };
+}
 
 
 
@@ -199,17 +207,9 @@ int main(void)
     rlImGuiSetup(true);
     SetTargetFPS(60);
 
-    Agent* Fish1 = new Agent({ 400,400 }, { 0,0 }, { 0,0 }, 200, 200);
-    Agent* Fish2 = new Agent({ 400,400 }, { 0,0 }, { 0,0 }, 150, 100);
-    Agent* Fish3 = new Agent({ 400,400 }, { 0,0 }, { 0,0 }, 150, 300);
-
-    agents.push_back(Fish1);
-    agents.push_back(Fish2);
-    agents.push_back(Fish3);
-
     float timer = 0;
 
-    Vector2 position = { 500,250 };//in px
+    Vector2 position = { SCREEN_WIDTH/2,SCREEN_HEIGHT/2 };//in px
     Vector2 velocity = { 0,0 }; //In px/s
     float maxSpeed = 10;
     float maxAccel = 150;
@@ -227,83 +227,54 @@ int main(void)
            const float dt = GetFrameTime();
     
 
-           if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
-           {
+
             mousePOS = GetMousePosition();
-
-           }
-           else
-           {
-                mousePOS = Fish1->GetPosition();
-           }
-
     
 
 
-        Vector2 VectorToMouse =
+        Vector2 direction =
         {
             mousePOS.x - position.x,    
            mousePOS.y - position.y
         };
-        VectorToMouse = Normalize(VectorToMouse);
-        Vector2 desiredVelocity = VectorToMouse * maxSpeed;
-
-        Vector2 deltaVelocity = desiredVelocity - velocity;
-
-        acceleration = (Normalize(deltaVelocity) * maxAccel) ;
-      //  acceleration = VectorToMouse * maxAccel;
-
-        float MagOfVelo = sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y));
-
         
-            if(MagOfVelo > MagOfVelo)
-            {
-                velocity = velocity * (maxSpeed / MagOfVelo);
-             
-            }
-        
-        position = position + (velocity *dt) + ((acceleration * 0.5f) * dt * dt);
+        direction = Normalize(direction);
 
-        velocity = velocity + acceleration * dt;
-         
+        float angle = AngleFromVector(direction);
 
-      ImGui::SliderFloat2("position", &(position.x), 0, SCREEN_WIDTH);
-      ImGui::SliderFloat2("velocity", &(velocity.x), -maxSpeed, maxSpeed);
-      ImGui::SliderFloat2("Acceleration", &(acceleration.x), -maxAccel, maxAccel);
-      ImGui::SliderFloat("Max Acceleration", &maxAccel, 1, 1500); 
-      ImGui::SliderFloat("Max Speed", &maxSpeed, -1, 1500);
+        float wiskerAngleLeft = fmodf(angle-30+360,360.0f);
+        float wiskerAngleRight = fmodf(angle+30+360,360.0f);
+
+        Vector2 wiskerLeft = VectorFromAngleDegrees(wiskerAngleLeft) * 100;
+        Vector2 wiskerRight = VectorFromAngleDegrees(wiskerAngleRight) * 100;
+
+    //  ImGui::SliderFloat2("position", &(position.x), 0, SCREEN_WIDTH);
+    //  ImGui::SliderFloat2("velocity", &(velocity.x), -maxSpeed, maxSpeed);
+    //  ImGui::SliderFloat2("Acceleration", &(acceleration.x), -maxAccel, maxAccel);
+    //  ImGui::SliderFloat("Max Acceleration", &maxAccel, 1, 1500); 
+    //  ImGui::SliderFloat("Max Speed", &maxSpeed, -1, 1500);
             
-
-      if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
-      {
-          for (Agent* i : agents)
-          {
-              i->Seek(mousePOS, dt);
-          }
-      }
-      else {
-          for (Agent* i : agents)
-          {
-              i->Flee(dt,position);// (dt, position);
-         }
-      }
-      for (Agent* i : agents)
-      {
-          i->Draw();
-      }
 
             position = WrapAroundScreen(position);
             DrawCircleV(mousePOS, 30, RED);
             DrawCircleV(position, 45, BLACK);
 
 
-            DrawLineV(position, position + velocity, GREEN);
-            DrawLineV(position, position + acceleration, RED);
-            DrawLineV(position, position + desiredVelocity, PURPLE);
+            DrawLineV(position, position + Vector2{100,0}, BLACK);
+            DrawLineV(position, position + direction *100, PINK);
+            DrawLineV(position, position + wiskerLeft, GREEN);
+            DrawLineV(position, position + wiskerRight, BLUE);
+
+            DrawText(TextFormat("Angle: %f.1", angle),200, position.y + 45, 20, RED);
+            DrawText(TextFormat("Wisker Angle Green : %f.1", wiskerAngleLeft),200, position.y + 65, 20, RED);
+            DrawText(TextFormat("Wisker Angle Blue : %f.1", wiskerAngleRight),200, position.y + 85, 20, RED);
+
+          //  DrawLineV(position, position + acceleration, RED);
+          //  DrawLineV(position, position + desiredVelocity, PURPLE);
 
 
 
-            timer += dt;
+        timer += dt;
         rlImGuiEnd();
         EndDrawing();
     }
