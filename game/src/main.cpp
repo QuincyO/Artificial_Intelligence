@@ -10,7 +10,13 @@
 //        m_fish->SetPosition(position);
 //        m_fish->SetVelocity(m_fish->GetVelocity() + acceleration * deltaTime);
 
+bool CheckCollisionLineCircle(Vector2 agentPosition,Vector2 obstaclePosition,Vector2 lineToCheckAgainst,float circleRadius)
+{
+    Vector2 nearestPointC = NearestPoint(agentPosition, agentPosition + lineToCheckAgainst, obstaclePosition);
 
+    float distanceFromObstacleToPoint = Distance(nearestPointC, obstaclePosition);
+    return  (distanceFromObstacleToPoint <= circleRadius);
+}
 
 Vector2 WrapAroundScreen(Vector2 position)
 {
@@ -209,11 +215,16 @@ int main(void)
 
     float timer = 0;
 
+    const float radius = 65.f;
+    const float whiskerLength = 300;
+
+
     Vector2 position = { SCREEN_WIDTH/2,SCREEN_HEIGHT/2 };//in px
     Vector2 velocity = { 0,0 }; //In px/s
     float maxSpeed = 10;
     float maxAccel = 150;
     Vector2 acceleration = { 0,0 }; //In px/s/s
+    Vector2 direction = { 0.0f,1.0f };
 
 
     Vector2 mousePOS = { 0,0 };
@@ -232,11 +243,11 @@ int main(void)
     
 
 
-        Vector2 direction =
-        {
-            mousePOS.x - position.x,    
-           mousePOS.y - position.y
-        };
+     //    direction =
+     //    {
+     //        mousePOS.x - position.x,    
+     //       mousePOS.y - position.y
+     //    };
         
         direction = Normalize(direction);
 
@@ -245,8 +256,11 @@ int main(void)
         float wiskerAngleLeft = fmodf(angle-30+360,360.0f);
         float wiskerAngleRight = fmodf(angle+30+360,360.0f);
 
-        Vector2 wiskerLeft = VectorFromAngleDegrees(wiskerAngleLeft) * 100;
-        Vector2 wiskerRight = VectorFromAngleDegrees(wiskerAngleRight) * 100;
+        Vector2 wiskerLeft = VectorFromAngleDegrees(wiskerAngleLeft) * whiskerLength;
+        Vector2 wiskerRight = VectorFromAngleDegrees(wiskerAngleRight) * whiskerLength;
+
+
+
 
     //  ImGui::SliderFloat2("position", &(position.x), 0, SCREEN_WIDTH);
     //  ImGui::SliderFloat2("velocity", &(velocity.x), -maxSpeed, maxSpeed);
@@ -255,26 +269,20 @@ int main(void)
     //  ImGui::SliderFloat("Max Speed", &maxSpeed, -1, 1500);
             
 
-        CheckCollisionPointLine();
-        if (mousePOS )
-
-
-
-
-
 
 
 
 
             position = WrapAroundScreen(position);
-            DrawCircleV(mousePOS, 30, RED);
-            DrawCircleV(position, 45, BLACK);
-
+            DrawCircleV(mousePOS, radius, RED);
+            DrawCircleV(position, 25, BLUE);
+            
 
             DrawLineV(position, position + Vector2{100,0}, BLACK);
             DrawLineV(position, position + direction *100, PINK);
-            DrawLineV(position, position + wiskerLeft, GREEN);
-            DrawLineV(position, position + wiskerRight, BLUE);
+            DrawLineV(position, position + wiskerLeft, (rightCollision) ? RED : GREEN);
+            DrawLineV(position, position + wiskerRight, GREEN);
+            DrawCircleV(nearestPointC, 5, BLACK);
 
             DrawText(TextFormat("Angle: %f.1", angle),200, position.y + 45, 20, RED);
             DrawText(TextFormat("Wisker Angle Green : %f.1", wiskerAngleLeft),200, position.y + 65, 20, RED);
