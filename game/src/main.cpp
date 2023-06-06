@@ -67,7 +67,9 @@ public:
         whiskerLengthR2 = r2;
         m_fish->angularSpeed = 100;
 
-         m_fish->rotation = AngleFromVector(Normalize(m_fish->dir));
+        whiskers = new Vector2[whiskerCount];
+        detection = new bool [whiskerCount];
+
     }
 
     ~Agent()
@@ -78,42 +80,68 @@ public:
 
 
 
-    void Avoid(Vector2 targetToAvoid, float deltaTime)
+
+
+    void Avoid(Vector2 obstacle,float deltaTime,float radiusOfObstacle)
     {
+        //direction = Rotate(direction, 50 * dt * DEG2RAD);
 
+        for (int i = 0; i < whiskerCount; i++)
+        {
+            detection[i] = CheckCollisionLineCircle(m_fish->pos, obstacle, whiskers[i], radiusOfObstacle);
+        }
+        
+        if (detection[1] || detection[0])
+        {
+            m_fish->velo = Rotate(m_fish->velo, m_fish->angularSpeed * deltaTime * DEG2RAD);
+        }
 
+        if (detection[2] || detection[3])
+        {
+            m_fish->velo = Rotate(m_fish->velo, -m_fish->angularSpeed * deltaTime * DEG2RAD);
+        }
 
     }
 
-
-    //Updates Movement
-    void Update(float deltaTime)
+    void UpdateWhiskers()
     {
-
-        m_fish->pos = m_fish->pos + (m_fish->velo * deltaTime) + ((m_fish->accel * 0.5f) * deltaTime * deltaTime);
-        m_fish->velo = m_fish->velo + m_fish->accel * deltaTime;
-        m_fish->pos = WrapAroundScreen(m_fish->pos);
-        
-        m_fish->accel = {};
-        
-
         whiskerAngleL1 = fmodf(m_fish->rotation - 15 + 360, 360.0f);
         whiskerAngleL2 = fmodf(m_fish->rotation - 30 + 360, 360.0f);
         whiskerAngleR1 = fmodf(m_fish->rotation + 15 + 360, 360.0f);
         whiskerAngleR2 = fmodf(m_fish->rotation + 30 + 360, 360.0f);
 
 
-        whiskerLeft1 = VectorFromAngleDegrees(whiskerAngleL1) * whiskerLengthL1;
-        whiskerLeft2 = VectorFromAngleDegrees(whiskerAngleL2) * whiskerLengthL2;
-        whiskerRight1 = VectorFromAngleDegrees(whiskerAngleR1) * whiskerLengthR1;
-        whiskerRight2 = VectorFromAngleDegrees(whiskerAngleR2) * whiskerLengthR2;
+        whiskers[0] = VectorFromAngleDegrees(whiskerAngleL1) * whiskerLengthL1;
+        whiskers[1] = VectorFromAngleDegrees(whiskerAngleL2) * whiskerLengthL2;
+        whiskers[2] = VectorFromAngleDegrees(whiskerAngleR1) * whiskerLengthR1;
+        whiskers[3] = VectorFromAngleDegrees(whiskerAngleR2) * whiskerLengthR2;
+
+  
+
+
+    }
+
+    //Updates Movement
+    void Update(float deltaTime)
+    {
+         m_fish->rotation = AngleFromVector(Normalize(m_fish->velo));
+        UpdateWhiskers();
+
+
+
+        
+
+
 
        float MagOfVelo = Length(m_fish->velo);
        if (MagOfVelo > m_maxSpeed)
        {
            m_fish->velo = m_fish->velo * (m_maxSpeed / MagOfVelo);
        };
-
+       m_fish->pos = m_fish->pos + (m_fish->velo * deltaTime) + ((m_fish->accel * 0.5f) * deltaTime * deltaTime);
+       m_fish->velo = m_fish->velo + m_fish->accel * deltaTime;
+       m_fish->pos = WrapAroundScreen(m_fish->pos);
+       m_fish->accel = {};
 
       //  m_fish->dir = RotateTowards(m_fish->dir, Normalize(m_fish->velo), m_fish->angularSpeed * deltaTime);
     }
@@ -125,7 +153,7 @@ public:
         Vector2 deltaAccel = Normalize(targetPosition - m_fish->pos) * m_maxSpeed - m_fish->velo;
 
          m_fish->rotation = AngleFromVector(targetPosition-m_fish->pos);
-        m_fish->dir = VectorFromAngleDegrees(m_fish->rotation);
+      //  m_fish->dir = VectorFromAngleDegrees(m_fish->rotation);
         m_fish->accel = deltaAccel;
         return deltaAccel;       
     }
@@ -139,11 +167,15 @@ public:
 
     void Draw()
     {
+        Vector2 veloNorm = Normalize(m_fish->velo);
 
         DrawCircleV(m_fish->pos, circleRadius, BLACK);
-        DrawLineV(m_fish->pos, m_fish->pos + m_fish->dir * 100, RED);
-        DrawLineV(m_fish->pos, m_fish->pos + whiskerLeft1, GREEN);
-        DrawLineV(m_fish->pos, m_fish->pos + whiskerRight1, GREEN);
+        DrawLineV(m_fish->pos, m_fish->pos + veloNorm * 100, RED);
+        for (int i = 0; i < whiskerCount; i++)
+        {
+            DrawLineV(m_fish->pos, m_fish->pos + whiskers[i],(detection[i]) ? RED:GREEN);
+
+        }
     }
 
 private:
@@ -162,6 +194,11 @@ private:
     float whiskerAngleL2 ;
     float whiskerAngleR1 ;
     float whiskerAngleR2 ;
+
+    int whiskerCount = 4;
+
+    bool* detection;
+    Vector2* whiskers;
 
     Vector2 whiskerLeft1 ;
     Vector2 whiskerLeft2 ;
@@ -185,7 +222,7 @@ int main(void)
 
     float timer = 0;
 
-    const float radius = 65.f;
+    const float radius = 30;
     const float whiskerLength = 300;
 
 
@@ -239,34 +276,37 @@ int main(void)
     //  ImGui::SliderFloat2("Acceleration", &(acceleration.x), -maxAccel, maxAccel);
     //  ImGui::SliderFloat("Max Acceleration", &maxAccel, 1, 1500); 
     //  ImGui::SliderFloat("Max Speed", &maxSpeed, -1, 1500);
-        fish1->Seek(mousePOS, dt);
-
-
-        fish1->Update(dt);
-        fish1->Draw();
 
 
 
+            fish1->Seek(mousePOS, dt);
+
+            fish1->Avoid(position, dt,radius);
+              fish1->Update(dt);
+              fish1->Draw();
 
 
 
-     //       position = WrapAroundScreen(position);
-     //       DrawCircleV(mousePOS, radius, RED);
-     //       DrawCircleV(position, 25, BLUE);
-     //       
-     //
-     //       DrawLineV(position, position + Vector2{100,0}, BLACK);
-     //       DrawLineV(position, position + direction *100, PINK);
-     //       DrawLineV(position, position + wiskerLeft, (CheckCollisionLineCircle(position,mousePOS,wiskerLeft,radius)) ? RED : GREEN);
-     //       DrawLineV(position, position + wiskerRight, GREEN);
-     //       //DrawCircleV(nearestPointC, 5, BLACK);
-     //
-     //       DrawText(TextFormat("Angle: %f.1", angle),200, position.y + 45, 20, RED);
-     //       DrawText(TextFormat("Wisker Angle Green : %f.1", wiskerAngleLeft),200, position.y + 65, 20, RED);
-     //       DrawText(TextFormat("Wisker Angle Blue : %f.1", wiskerAngleRight),200, position.y + 85, 20, RED);
-     //
-     //     //  DrawLineV(position, position + acceleration, RED);
-     //     //  DrawLineV(position, position + desiredVelocity, PURPLE);
+
+
+
+            position = WrapAroundScreen(position);
+            DrawCircleV(mousePOS, radius, RED);
+            DrawCircleV(position, 25, BLUE);
+            
+     
+       //    DrawLineV(position, position + Vector2{100,0}, BLACK);
+       //    DrawLineV(position, position + direction *100, PINK);
+       //    DrawLineV(position, position + wiskerLeft, (CheckCollisionLineCircle(position,mousePOS,wiskerLeft,radius)) ? RED : GREEN);
+       //    DrawLineV(position, position + wiskerRight, GREEN);
+       //    //DrawCircleV(nearestPointC, 5, BLACK);
+     
+            DrawText(TextFormat("Angle: %f.1", angle),200, position.y + 45, 20, RED);
+            DrawText(TextFormat("Wisker Angle Green : %f.1", wiskerAngleLeft),200, position.y + 65, 20, RED);
+            DrawText(TextFormat("Wisker Angle Blue : %f.1", wiskerAngleRight),200, position.y + 85, 20, RED);
+     
+          //  DrawLineV(position, position + acceleration, RED);
+          //  DrawLineV(position, position + desiredVelocity, PURPLE);
 
 
 
