@@ -1,9 +1,10 @@
 #include "rlImGui.h"
 #include "Math.h"
+#include "TileMap.h"
 #include <iostream>
 #include <vector>
-#define SCREEN_WIDTH 1280
-#define SCREEN_HEIGHT 720
+#define SCREEN_WIDTH 1280 //40 tiles
+#define SCREEN_HEIGHT 768 //23 Tiles
 
 //        position = position + (m_fish->GetVelocity() * deltaTime) + ((acceleration * 0.5f) * deltaTime * deltaTime);
 //        position = WrapAroundScreen(position);
@@ -161,7 +162,7 @@ public:
 
     Vector2 Flee(float deltaTime, Vector2 targetPosition)
     {
-        Vector2 deltaAccel = (Normalize(targetPosition - m_fish->pos) * m_maxSpeed - m_fish->velo) *-1;
+        Vector2 deltaAccel = (Normalize(targetPosition - m_fish->pos) * m_maxSpeed - m_fish->velo)  -1;
         return deltaAccel;
     }
 
@@ -170,7 +171,7 @@ public:
         Vector2 veloNorm = Normalize(m_fish->velo);
 
         DrawCircleV(m_fish->pos, circleRadius, BLACK);
-        DrawLineV(m_fish->pos, m_fish->pos + veloNorm * 100, RED);
+       // DrawLineV(m_fish->pos, m_fish->pos + veloNorm * 100, RED);
         for (int i = 0; i < whiskerCount; i++)
         {
             DrawLineV(m_fish->pos, m_fish->pos + whiskers[i],(detection[i]) ? RED:GREEN);
@@ -214,17 +215,17 @@ private:
 
 int main(void)
 {
-    std::vector<Agent*> agents;
-    Agent* fish1 = new Agent(100,100,100,100, 125, 200);
+    Tilemap map;
+
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Sunshine");
     rlImGuiSetup(true);
     SetTargetFPS(60);
 
     float timer = 0;
 
-    const float radius = 30;
-    const float whiskerLength = 300;
-
+    int wallChance = 20;
+    map.RegnerateLevel(wallChance);
+    bool imGui = false;
 
     Vector2 position = { SCREEN_WIDTH/2,SCREEN_HEIGHT/2 };//in px
     Vector2 velocity = { 0,0 }; //In px/s
@@ -242,71 +243,23 @@ int main(void)
         ClearBackground(GRAY);
             rlImGuiBegin();
 
+            if (IsKeyPressed(KEY_GRAVE)) imGui = !imGui;
+            if (imGui)
+            {
+                ImGui::SliderInt("Wall%", &wallChance, 0, 100, NULL);
+                if (ImGui::Button("Regenerate Level"))
+                {
+                    map.RegnerateLevel(wallChance);
+                }
+            }
+            
+
         const float dt = GetFrameTime();
         mousePOS = GetMousePosition();
+        map.DrawTiles();
+        map.DrawBorders();
+        map.DrawNodes();
 
-
-
-
-        float angle = AngleFromVector(direction);
-
-        float wiskerAngleLeft = fmodf(angle-30+360,360.0f);
-        float wiskerAngleRight = fmodf(angle+30+360,360.0f);
-
-        Vector2 wiskerLeft = VectorFromAngleDegrees(wiskerAngleLeft) * whiskerLength;
-        Vector2 wiskerRight = VectorFromAngleDegrees(wiskerAngleRight) * whiskerLength;
-
-        bool leftCollision = CheckCollisionLineCircle(position, mousePOS, wiskerLeft, radius);
-        bool rightCollision = CheckCollisionLineCircle(position, mousePOS, wiskerRight, radius);
-
-        if (leftCollision)
-        {
-            direction = Rotate(direction, 50 * dt * DEG2RAD);
-        }
-
-        if (rightCollision)
-        {
-            direction = Rotate(direction, -50 * dt * DEG2RAD);
-        }
-
-
-
-    //  ImGui::SliderFloat2("position", &(position.x), 0, SCREEN_WIDTH);
-    //  ImGui::SliderFloat2("velocity", &(velocity.x), -maxSpeed, maxSpeed);
-    //  ImGui::SliderFloat2("Acceleration", &(acceleration.x), -maxAccel, maxAccel);
-    //  ImGui::SliderFloat("Max Acceleration", &maxAccel, 1, 1500); 
-    //  ImGui::SliderFloat("Max Speed", &maxSpeed, -1, 1500);
-
-
-
-            fish1->Seek(mousePOS, dt);
-
-            fish1->Avoid(position, dt,radius);
-              fish1->Update(dt);
-              fish1->Draw();
-
-
-
-
-
-
-            position = WrapAroundScreen(position);
-            DrawCircleV(mousePOS, radius, RED);
-            DrawCircleV(position, 25, BLUE);
-            
-     
-       //    DrawLineV(position, position + Vector2{100,0}, BLACK);
-       //    DrawLineV(position, position + direction *100, PINK);
-       //    DrawLineV(position, position + wiskerLeft, (CheckCollisionLineCircle(position,mousePOS,wiskerLeft,radius)) ? RED : GREEN);
-       //    DrawLineV(position, position + wiskerRight, GREEN);
-       //    //DrawCircleV(nearestPointC, 5, BLACK);
-     
-            DrawText(TextFormat("Angle: %f.1", angle),200, position.y + 45, 20, RED);
-            DrawText(TextFormat("Wisker Angle Green : %f.1", wiskerAngleLeft),200, position.y + 65, 20, RED);
-            DrawText(TextFormat("Wisker Angle Blue : %f.1", wiskerAngleRight),200, position.y + 85, 20, RED);
-     
-          //  DrawLineV(position, position + acceleration, RED);
-          //  DrawLineV(position, position + desiredVelocity, PURPLE);
 
 
 
