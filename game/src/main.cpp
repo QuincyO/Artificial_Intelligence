@@ -3,8 +3,7 @@
 #include "TileMap.h"
 #include <iostream>
 #include <vector>
-#define SCREEN_WIDTH 1280 //40 tiles
-#define SCREEN_HEIGHT 768 //23 Tiles
+
 
 //        position = position + (m_fish->GetVelocity() * deltaTime) + ((acceleration * 0.5f) * deltaTime * deltaTime);
 //        position = WrapAroundScreen(position);
@@ -215,12 +214,12 @@ private:
 
 int main(void)
 {
-    Tilemap map;
-
+    
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Sunshine");
     rlImGuiSetup(true);
     SetTargetFPS(60);
-
+    Tilemap map("../game/assets/p1_walk01.png");
+    map.player.SetSize(64, 64);
     float timer = 0;
 
     int wallChance = 20;
@@ -240,7 +239,7 @@ int main(void)
     while (!WindowShouldClose())
     {
         BeginDrawing();
-        ClearBackground(GRAY);
+        ClearBackground(WHITE);
             rlImGuiBegin();
 
             if (IsKeyPressed(KEY_GRAVE)) imGui = !imGui;
@@ -252,6 +251,11 @@ int main(void)
                     map.RegnerateLevel(wallChance);
                 }
             }
+
+            if (IsKeyPressed(KEY_W)) map.MoveSpriteUp();
+            if (IsKeyPressed(KEY_S)) map.MoveSpriteDown();
+            if (IsKeyPressed(KEY_A)) map.MoveSpriteLeft();
+            if (IsKeyPressed(KEY_D)) map.MoveSpriteRight();
             
 
         const float dt = GetFrameTime();
@@ -259,7 +263,7 @@ int main(void)
         map.DrawTiles();
         map.DrawBorders();
         map.DrawNodes();
-
+        map.DrawSprite();
 
 
 
@@ -269,6 +273,7 @@ int main(void)
     }
 
     CloseWindow();
+    //If you are curious about what numbers the hash function produces, try puttin this block of test code in main
     return 0;
 
 }

@@ -14,10 +14,8 @@ void Tilemap::SetTile(int x, int y, Tile type)
 
 bool Tilemap::IsInsideGrid(Vector2 tilePosition)
 {
-	if ((tilePosition.x <= MAP_WIDTH ||
-		tilePosition.x >= MAP_WIDTH) &&
-		(tilePosition.y <= MAP_HEIGHT ||
-		tilePosition.y >= MAP_HEIGHT))
+	if (tilePosition.x < MAP_WIDTH && tilePosition.x >= 0 &&
+		tilePosition.y < MAP_HEIGHT && tilePosition.y >= 0)
 		return true;
 	else return false;
 }
@@ -25,6 +23,11 @@ bool Tilemap::IsInsideGrid(Vector2 tilePosition)
 Vector2 Tilemap::TilePosToScreenPos(int x, int y)
 {	
 	return { (float)x * tileSizeX, (float)y * tileSizeY };
+}
+
+Vector2 Tilemap::ScreenPosToTilePos(Vector2 postionOnScreen)
+{
+	return { postionOnScreen.x / tileSizeX, postionOnScreen.y / tileSizeY };
 }
 
 bool Tilemap::IsTraversible(Vector2 tilePosition)
@@ -43,7 +46,7 @@ void Tilemap::DrawBorders(Color color)
 		DrawLine(x * tileSizeX, 0, x * tileSizeX, GetGridHeight() * tileSizeX, color);
 	}
 
-	for (int y = 0; y < GetGridHeight(); y++)
+	for (int y = 0; y < GetGridHeight()+1; y++)
 		DrawLine(0, y * tileSizeY, GetGridWidth() * tileSizeX, y * tileSizeY, color);
 }
 
@@ -79,6 +82,84 @@ void Tilemap::RegnerateLevel(int chanceofWall)
 			else SetTile(x, y, Tile::Floor);
 		}
 	}
+	ReplacePlayer();
+}
+
+Vector2 Tilemap::GetTileCenter(Vector2 tilePosition)
+{
+	return { tilePosition.x*tileSizeX + (tileSizeX / 2),tilePosition.y*tileSizeY + (tileSizeY / 2) };
+}
+
+void Tilemap::MoveSpriteUp()
+{
+	Vector2 playerPos = { player.GetDest().x,player.GetDest().y };
+	Vector2 tileCord = ScreenPosToTilePos(playerPos);
+	tileCord.y -= 1;
+
+	if (IsTraversible(tileCord))
+	{
+		player.SetPosition(TilePosToScreenPos(tileCord.x, tileCord.y));
+	}
+	
+}
+
+void Tilemap::MoveSpriteLeft()
+{
+	Vector2 playerPos = { player.GetDest().x,player.GetDest().y };
+	Vector2 tileCord = ScreenPosToTilePos(playerPos);
+	tileCord.x -= 1;
+
+	if (IsTraversible(tileCord))
+	{
+		player.SetPosition(TilePosToScreenPos(tileCord.x, tileCord.y));
+	}
+}
+
+void Tilemap::MoveSpriteDown()
+{
+	Vector2 playerPos = { player.GetDest().x,player.GetDest().y };
+	Vector2 tileCord = ScreenPosToTilePos(playerPos);
+	tileCord.y += 1;
+
+	if (IsTraversible(tileCord))
+	{
+		player.SetPosition(TilePosToScreenPos(tileCord.x, tileCord.y));
+	}
+
+}
+
+void Tilemap::MoveSpriteRight()
+{
+	Vector2 playerPos = { player.GetDest().x,player.GetDest().y };
+	Vector2 tileCord = ScreenPosToTilePos(playerPos);
+	tileCord.x += 1;
+
+	if (IsTraversible(tileCord))
+	{
+		player.SetPosition(TilePosToScreenPos(tileCord.x, tileCord.y));
+	}
+}
+
+void Tilemap::ReplacePlayer()
+{
+	bool breakFlag = false;
+	for (int x = 0; x < MAP_WIDTH; x++)
+	{
+		for (int y = 0; y < MAP_HEIGHT; y++)
+		{
+			Vector2 tileCoord = { x,y };
+			if (IsTraversible(tileCoord))
+			{
+				breakFlag = true;
+				Vector2 centerOfTile = TilePosToScreenPos(x,y);
+
+				player.SetPosition(centerOfTile.x, centerOfTile.y);
+				break;
+			}
+		}
+			if (breakFlag) break;
+	}
+
 }
 
 void Tilemap::DrawNodes()
@@ -91,13 +172,16 @@ void Tilemap::DrawNodes()
 			Vector2 tempVec = { x,y };
 			if (IsTraversible(tempVec))
 			{
-				Vector2 center = { (x * tileSizeX)+(tileSizeX/2),(y * tileSizeY)+(tileSizeY/2)};
+				DrawCircleV(GetTileCenter(tempVec), 15, GREEN);
 				std::vector<Vector2> connections = GetTraversibleTilesAdjacentTo(tempVec);
-				for (Vector2 connection : connections)
+				for (Vector2& connection : connections)
 				{
-					DrawLineV(center, connection, GREEN);
+
+					DrawLineV(GetTileCenter(tempVec), GetTileCenter(connection), GREEN);
 				}
-				DrawCircleV(center, 15, GREEN);
+					
+
+				
 			}
 		}
 	}
@@ -106,6 +190,13 @@ void Tilemap::DrawNodes()
 void Tilemap::DrawConnections()
 {
 
+}
+
+void Tilemap::DrawSprite()
+{
+	Vector2 origin = { player.GetDest().x + (player.GetDest().width / 2)
+					, player.GetDest().y + (player.GetDest().height / 2) };
+	DrawTexturePro(player.GetTexture(), player.GetSource(), player.GetDest(), {}, 0, WHITE);
 }
 
 std::vector<Vector2> Tilemap::GetTraversibleTilesAdjacentTo(Vector2 tilePosition)
