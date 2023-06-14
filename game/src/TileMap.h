@@ -44,6 +44,7 @@ vector<vector<Tile>> v_Tiles; //Dynamic Array that can be changed during Runtime
 
 public:
 	Sprite player;
+
 	int tileSizeX = 64;
 	int tileSizeY = 64;
 
