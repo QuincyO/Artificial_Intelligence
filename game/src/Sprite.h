@@ -38,7 +38,7 @@ public:
 	void SetSize(int x, int y) { dstRect.width = x; dstRect.height = y; }
 
 	void SetPosition(int x, int y) { dstRect.x = x; dstRect.y = y; }
-	void SetPosition(Vector2 tilePosition) { dstRect.x = tilePosition.x; dstRect.y = tilePosition.y; }
+	void SetPosition(TileCoord tilePosition) { dstRect.x = tilePosition.x; dstRect.y = tilePosition.y; }
 	void Animate(float deltaTime) {}
 
 	Texture2D GetTexture() { return texture; }

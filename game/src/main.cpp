@@ -3,6 +3,7 @@
 #include "TileMap.h"
 #include <iostream>
 #include <vector>
+#include "Pathfinder.h"
 
 
 //        position = position + (m_fish->GetVelocity() * deltaTime) + ((acceleration * 0.5f) * deltaTime * deltaTime);
@@ -56,24 +57,23 @@ struct RigidBody
 
 int main(void)
 {
-    
+    bool startSelected = false;
+    bool endSelected = false;
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Sunshine");
     rlImGuiSetup(true);
     SetTargetFPS(60);
     Tilemap map("../game/assets/p1_walk01.png");
     map.player.SetSize(64, 64);
     float timer = 0;
-
+    TileCoord startNode = {};
+    TileCoord endNode = {};
     int wallChance = 20;
+
+
     map.RegnerateLevel(wallChance);
     bool imGui = false;
 
-    Vector2 position = { SCREEN_WIDTH/2,SCREEN_HEIGHT/2 };//in px
-    Vector2 velocity = { 0,0 }; //In px/s
-    float maxSpeed = 10;
-    float maxAccel = 150;
-    Vector2 acceleration = { 0,0 }; //In px/s/s
-    Vector2 direction = { 13.0f,25.0f };
+
 
 
     Vector2 mousePOS = { 0,0 };
@@ -88,17 +88,54 @@ int main(void)
             if (imGui)
             {
                 ImGui::SliderInt("Wall%", &wallChance, 0, 100, NULL);
+                ImGui::Text("Start Coord = %d : %d",startNode.x , startNode.y);
+                ImGui::Text("End Coord = %d : %d",endNode.x , endNode.y);
                 if (ImGui::Button("Regenerate Level"))
                 {
                     map.RegnerateLevel(wallChance);
                 }
             }
 
+            if (startSelected == false)
+            {
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
+                    startNode = map.ScreenPosToTilePos(GetMousePosition());
+                    startSelected = true;
+                }
+
+            }
+
+             else if (endSelected == false)
+            {
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
+                    endNode = map.ScreenPosToTilePos(GetMousePosition());
+                    endSelected = true;
+                }
+
+            }
+            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+            {
+                startNode = {};
+                endNode = {};
+                startSelected = false;
+                endSelected = false;
+            }
+
+
+            Pathfinder brain(&map, startNode, endNode);
+
+            brain.GetLowestCostFromNeihbors();
+
             if (IsKeyPressed(KEY_W)) map.MoveSpriteUp();
             if (IsKeyPressed(KEY_S)) map.MoveSpriteDown();
             if (IsKeyPressed(KEY_A)) map.MoveSpriteLeft();
             if (IsKeyPressed(KEY_D)) map.MoveSpriteRight();
             
+
+
+
 
         const float dt = GetFrameTime();
         mousePOS = GetMousePosition();

@@ -1,6 +1,6 @@
 #include "TileMap.h"
 
-Tile Tilemap::GetTile(Vector2 tilePosition) 
+Tile Tilemap::GetTile(TileCoord tilePosition)
 {
 	int x = tilePosition.x;
 	int y = tilePosition.y;
@@ -12,7 +12,7 @@ void Tilemap::SetTile(int x, int y, Tile type)
 	tiles[x][y] = type;
 }
 
-bool Tilemap::IsInsideGrid(Vector2 tilePosition)
+bool Tilemap::IsInsideGrid(TileCoord tilePosition)
 {
 	if (tilePosition.x < MAP_WIDTH && tilePosition.x >= 0 &&
 		tilePosition.y < MAP_HEIGHT && tilePosition.y >= 0)
@@ -20,17 +20,16 @@ bool Tilemap::IsInsideGrid(Vector2 tilePosition)
 	else return false;
 }
 
-Vector2 Tilemap::TilePosToScreenPos(int x, int y)
+TileCoord Tilemap::TilePosToScreenPos(int x, int y)
 {	
 	return { (float)x * tileSizeX, (float)y * tileSizeY };
 }
 
-Vector2 Tilemap::ScreenPosToTilePos(Vector2 postionOnScreen)
-{
-	return { postionOnScreen.x / tileSizeX, postionOnScreen.y / tileSizeY };
+TileCoord Tilemap::ScreenPosToTilePos(Vector2 postionOnScreen)
+{return { (float)postionOnScreen.x / tileSizeX, (float)postionOnScreen.y / tileSizeY };
 }
 
-bool Tilemap::IsTraversible(Vector2 tilePosition)
+bool Tilemap::IsTraversible(TileCoord tilePosition)
 {
 	if (IsInsideGrid(tilePosition))
 	{
@@ -57,7 +56,7 @@ void Tilemap::DrawTiles()
 		for (int y = 0; y < GetGridHeight(); y++)
 		{
 			Tile tileType = tiles[x][y];
-			Vector2 tilePosition = TilePosToScreenPos(x, y);
+			TileCoord tilePosition = TilePosToScreenPos(x, y);
 			Color colorToDraw = PINK;
 			if (tileType == Tile::Floor) colorToDraw = WHITE;
 			else if (tileType == Tile::Wall) colorToDraw = BLACK;
@@ -85,15 +84,15 @@ void Tilemap::RegnerateLevel(int chanceofWall)
 	ReplacePlayer();
 }
 
-Vector2 Tilemap::GetTileCenter(Vector2 tilePosition)
+Vector2 Tilemap::GetTileCenter(TileCoord tilePosition)
 {
-	return { tilePosition.x*tileSizeX + (tileSizeX / 2),tilePosition.y*tileSizeY + (tileSizeY / 2) };
+	return { (float)tilePosition.x*tileSizeX + (tileSizeX / 2),(float)tilePosition.y*tileSizeY + (tileSizeY / 2) };
 }
 
 void Tilemap::MoveSpriteUp()
 {
 	Vector2 playerPos = { player.GetDest().x,player.GetDest().y };
-	Vector2 tileCord = ScreenPosToTilePos(playerPos);
+	TileCoord tileCord = ScreenPosToTilePos(playerPos);
 	tileCord.y -= 1;
 
 	if (IsTraversible(tileCord))
@@ -106,7 +105,7 @@ void Tilemap::MoveSpriteUp()
 void Tilemap::MoveSpriteLeft()
 {
 	Vector2 playerPos = { player.GetDest().x,player.GetDest().y };
-	Vector2 tileCord = ScreenPosToTilePos(playerPos);
+	TileCoord tileCord = ScreenPosToTilePos(playerPos);
 	tileCord.x -= 1;
 
 	if (IsTraversible(tileCord))
@@ -118,7 +117,7 @@ void Tilemap::MoveSpriteLeft()
 void Tilemap::MoveSpriteDown()
 {
 	Vector2 playerPos = { player.GetDest().x,player.GetDest().y };
-	Vector2 tileCord = ScreenPosToTilePos(playerPos);
+	TileCoord tileCord = ScreenPosToTilePos(playerPos);
 	tileCord.y += 1;
 
 	if (IsTraversible(tileCord))
@@ -131,7 +130,7 @@ void Tilemap::MoveSpriteDown()
 void Tilemap::MoveSpriteRight()
 {
 	Vector2 playerPos = { player.GetDest().x,player.GetDest().y };
-	Vector2 tileCord = ScreenPosToTilePos(playerPos);
+	TileCoord tileCord = ScreenPosToTilePos(playerPos);
 	tileCord.x += 1;
 
 	if (IsTraversible(tileCord))
@@ -147,11 +146,11 @@ void Tilemap::ReplacePlayer()
 	{
 		for (int y = 0; y < MAP_HEIGHT; y++)
 		{
-			Vector2 tileCoord = { x,y };
+			TileCoord tileCoord = { x,y };
 			if (IsTraversible(tileCoord))
 			{
 				breakFlag = true;
-				Vector2 centerOfTile = TilePosToScreenPos(x,y);
+				TileCoord centerOfTile = TilePosToScreenPos(x,y);
 
 				player.SetPosition(centerOfTile.x, centerOfTile.y);
 				break;
@@ -169,12 +168,12 @@ void Tilemap::DrawNodes()
 		for (int y = 0; y < MAP_HEIGHT; y++)
 
 		{
-			Vector2 tempVec = { x,y };
+			TileCoord tempVec = { x,y };
 			if (IsTraversible(tempVec))
 			{
 				DrawCircleV(GetTileCenter(tempVec), 15, GREEN);
-				std::vector<Vector2> connections = GetTraversibleTilesAdjacentTo(tempVec);
-				for (Vector2& connection : connections)
+				std::vector<TileCoord> connections = GetTraversibleTilesAdjacentTo(tempVec);
+				for (TileCoord& connection : connections)
 				{
 
 					DrawLineV(GetTileCenter(tempVec), GetTileCenter(connection), GREEN);
@@ -199,18 +198,35 @@ void Tilemap::DrawSprite()
 	DrawTexturePro(player.GetTexture(), player.GetSource(), player.GetDest(), {}, 0, WHITE);
 }
 
-std::vector<Vector2> Tilemap::GetTraversibleTilesAdjacentTo(Vector2 tilePosition)
+std::vector<TileCoord> Tilemap::GetTraversibleTilesAdjacentTo(TileCoord tilePosition)
 {
 	{
-		std::vector<Vector2> adjacentTilePositions;
-		Vector2 N = tilePosition + NORTH;
-		Vector2 S = tilePosition + SOUTH;
-		Vector2 E = tilePosition + EAST;
-		Vector2 W = tilePosition + WEST;
+		std::vector<TileCoord> adjacentTilePositions;
+		TileCoord N = tilePosition + NORTH;
+		TileCoord S = tilePosition + SOUTH;
+		TileCoord E = tilePosition + EAST;
+		TileCoord W = tilePosition + WEST;
 		if (IsTraversible(N)) adjacentTilePositions.push_back(N);
 		if (IsTraversible(S)) adjacentTilePositions.push_back(S);
 		if (IsTraversible(E)) adjacentTilePositions.push_back(E);
 		if (IsTraversible(W)) adjacentTilePositions.push_back(W);
 		return adjacentTilePositions;
 	}
+}
+
+vector<TileCoord> Tilemap::GetAllTraversableTiles()
+{
+	vector<TileCoord> tempVector;
+	for (int x = 0; x < MAP_WIDTH; x++)
+	{
+		for (int y = 0; y < MAP_HEIGHT; y++)
+		{
+			if (tiles[x][y] == Tile::Floor)
+			{
+				TileCoord tempCoor = { x,y };
+				tempVector.push_back(tempCoor);
+			}
+		}
+	}
+	return tempVector;
 }
